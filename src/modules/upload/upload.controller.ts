@@ -9,7 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody, ApiBadRequestResponse, ApiNoContentResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { User } from '../shared/decorators/user.decorator';
@@ -44,8 +44,7 @@ export class UploadController {
       },
     },
   })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'Image uploaded successfully',
     schema: {
       example: {
@@ -54,7 +53,7 @@ export class UploadController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'Invalid file format or size' })
+  @ApiBadRequestResponse({  description: 'Invalid file format or size' })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
@@ -88,8 +87,7 @@ export class UploadController {
       },
     },
   })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'Images uploaded successfully',
     schema: {
       example: [
@@ -100,7 +98,7 @@ export class UploadController {
       ],
     },
   })
-  @ApiResponse({ status: 400, description: 'Invalid file format or size' })
+  @ApiBadRequestResponse({  description: 'Invalid file format or size' })
   @UseInterceptors(
     FilesInterceptor('files', 10, {
       storage: memoryStorage(),
@@ -133,8 +131,7 @@ export class UploadController {
       },
     },
   })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'Avatar uploaded and profile updated successfully',
     schema: {
       example: {
@@ -143,7 +140,7 @@ export class UploadController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'Invalid file format or size' })
+  @ApiBadRequestResponse({  description: 'Invalid file format or size' })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
@@ -163,8 +160,8 @@ export class UploadController {
   @Post('delete')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an uploaded image' })
-  @ApiResponse({ status: 204, description: 'Image deleted successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid public ID' })
+  @ApiNoContentResponse({ description: 'Image deleted successfully' })
+  @ApiBadRequestResponse({ description: 'Invalid public ID' })
   async delete(@Body() dto: DeleteUploadDto): Promise<void> {
     await this.uploadService.deleteImage(dto.publicId);
   }

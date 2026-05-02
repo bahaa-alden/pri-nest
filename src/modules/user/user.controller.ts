@@ -10,7 +10,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiForbiddenResponse, ApiBadRequestResponse, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { Roles } from '../shared/decorators/roles.decorator';
 import { User } from '../shared/decorators/user.decorator';
@@ -32,9 +32,9 @@ export class UserController {
   @Post()
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Create a new user (Admin only)' })
-  @ApiResponse({ status: 201, description: 'User created successfully', type: UserEntity })
-  @ApiResponse({ status: 400, description: 'Invalid input' })
-  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  @ApiCreatedResponse({ description: 'User created successfully', type: UserEntity })
+  @ApiBadRequestResponse({  description: 'Invalid input' })
+  @ApiForbiddenResponse({  description: 'Insufficient permissions' })
   async create(@Body() dto: CreateUserDto): Promise<UserEntity> {
     const user = await this.userService.createUser(dto);
     return new UserEntity(user);
@@ -42,8 +42,8 @@ export class UserController {
 
   @Get('me')
   @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({ status: 200, description: 'User profile retrieved', type: UserEntity })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiOkResponse({ description: 'User profile retrieved', type: UserEntity })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async getProfile(@User('sub') userId: string): Promise<UserEntity> {
     const user = await this.userService.getProfile(userId);
     return new UserEntity(user);
@@ -51,9 +51,9 @@ export class UserController {
 
   @Patch('me')
   @ApiOperation({ summary: 'Update current user profile' })
-  @ApiResponse({ status: 200, description: 'User updated successfully', type: UserEntity })
-  @ApiResponse({ status: 400, description: 'Invalid input' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiOkResponse({ description: 'User updated successfully', type: UserEntity })
+  @ApiBadRequestResponse({  description: 'Invalid input' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async updateMe(@User('sub') userId: string, @Body() dto: UpdateUserDto): Promise<UserEntity> {
     const user = await this.userService.updateUser(userId, dto);
     return new UserEntity(user);
@@ -62,9 +62,9 @@ export class UserController {
   @Patch('me/password')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Change current user password' })
-  @ApiResponse({ status: 204, description: 'Password changed successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid password' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiNoContentResponse({  description: 'Password changed successfully' })
+  @ApiBadRequestResponse({  description: 'Invalid password' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async changePassword(@User('sub') userId: string, @Body() dto: ChangePasswordDto): Promise<void> {
     await this.userService.changePassword(userId, dto);
   }
@@ -73,9 +73,9 @@ export class UserController {
   @Roles(Role.ADMIN)
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiOperation({ summary: 'Get user by ID (Admin only)' })
-  @ApiResponse({ status: 200, description: 'User retrieved', type: UserEntity })
-  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
-  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiOkResponse({ description: 'User retrieved', type: UserEntity })
+  @ApiForbiddenResponse({ description: 'Insufficient permissions' })
+  @ApiNoContentResponse({ description: 'User not found' })
   async getById(@Param('id') id: string): Promise<UserEntity> {
     const user = await this.userService.getProfile(id);
     return new UserEntity(user);
@@ -86,9 +86,9 @@ export class UserController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiOperation({ summary: 'Delete user (Admin only)' })
-  @ApiResponse({ status: 204, description: 'User deleted successfully' })
-  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
-  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiNoContentResponse({  description: 'User deleted successfully' })
+  @ApiForbiddenResponse({ description: 'Insufficient permissions' })
+  @ApiNoContentResponse({ description: 'User not found' })
   async delete(@Param('id') id: string): Promise<void> {
     await this.userService.deleteUser(id);
   }
